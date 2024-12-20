@@ -1,0 +1,31 @@
+#include <windows.h>
+#include <iostream>
+
+int main() {
+    SIZE_T size = 1024; // 1 KB
+    LPVOID pMemory = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    
+    if (pMemory == NULL) {
+        std::cerr << "Не вдалося виділити пам'ять. Код помилки: " << GetLastError() << std::endl;
+        return 1;
+    }
+    int* pData = (int*)pMemory;
+    for (int i = 0; i < size / sizeof(int); ++i) {
+        pData[i] = i * i; 
+    }
+    for (int i = 0; i < size / sizeof(int); ++i) {
+        if (pData[i] != i * i) {
+            std::cerr << "Помилка: дані не співпадають!" << std::endl;
+            VirtualFree(pMemory, 0, MEM_RELEASE);
+            return 1;
+        }
+    }
+    std::cout << "Дані записані і перевірені успішно!" << std::endl;
+    if (!VirtualFree(pMemory, 0, MEM_RELEASE)) {
+        std::cerr << "Не вдалося звільнити пам'ять. Код помилки: " << GetLastError() << std::endl;
+        return 1;
+    }
+
+    std::cout << "Пам'ять успішно звільнена!" << std::endl;
+    return 0;
+}
